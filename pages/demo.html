@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>交互式画板</title>
+  <script src="https://www.geogebra.org/apps/script/api.js"></script>
+  <style>
+    body { margin: 0; font-family: sans-serif; text-align: center; }
+    #applet { width: 800px; height: 500px; margin: 20px auto; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h2>知识点演示：<span id="title"></span></h2>
+  <p>（画板组提供 .ggb 后，此处将显示 GeoGebra 交互画板）</p>
+  <div id="applet"></div>
+  <script>
+    var id = new URLSearchParams(location.search).get('id') || 'default';
+    document.getElementById('title').innerText = id;
+    // 后续画板组给 material_id 后填在这里
+    var ggbApp = new GGBApplet({
+      "material_id": "j4k3l2m1", 
+      "width": 800, "height": 500,
+      "showToolBar": true
+    }, true);
+    ggbApp.inject('applet');
+  </script>
+</body>
+</html>
