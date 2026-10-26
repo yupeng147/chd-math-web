@@ -2,18 +2,264 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>数学分析 - 知识图谱</title>
-  <!-- 引入你的 style.css -->
-  <link rel="stylesheet" href="css/style.css">
-  <!-- 引入 ECharts 图谱库 -->
+  <title>数学分析 - 知识图谱导航</title>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <style>
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Microsoft YaHei", sans-serif; }
+    #graph { width: 100vw; height: 100vh; background: #f8f9fa; }
+    .tip { position: absolute; top: 10px; left: 10px; color: #666; font-size: 14px; z-index: 10; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .legend-tag { position: absolute; bottom: 20px; left: 10px; background: rgba(255,255,255,0.95); padding: 10px 14px; border-radius: 6px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); line-height: 1.8; }
+    .legend-tag span { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  </style>
 </head>
 <body>
-  <div class="tip">提示：滚轮缩放，拖拽画布，点击节点展开/收起，末级跳转画板</div>
+  <div class="tip">
+    📌 <b>数学分析（华师大第六版·上册）</b><br>
+    滚轮缩放 · 拖拽画布 · 点击模块展开/收起 · 点击知识点跳转画板
+  </div>
+  <div class="legend-tag">
+    <span style="background:#C0392B"></span>中心
+    <span style="background:#2E86C1; margin-left:8px;"></span>模块
+    <span style="background:#27AE60; margin-left:8px;"></span>画板(A/B/C级)
+  </div>
   <div id="graph"></div>
-  
-  <!-- 引入你的 graph.js（放在底部确保DOM加载完） -->
-  <script src="js/graph.js"></script>
+  <script>
+    var chart = echarts.init(document.getElementById('graph'));
+
+    // ============ 真实数据（来自画板制作清单） ============
+    var rawData = {
+      name: '数学分析（第六版·上册）',
+      children: [
+        {
+          name: '模块一 实数集与函数',
+          children: [
+            { name: 'GP-01 区间与邻域', isLeaf: true, id: 'GP-01', link: 'pages/demo.html?id=GP-01' },
+            { name: 'GP-02 确界原理', isLeaf: true, id: 'GP-02', link: 'pages/demo.html?id=GP-02' },
+            { name: 'GP-03 函数图像变换', isLeaf: true, id: 'GP-03', link: 'pages/demo.html?id=GP-03' },
+            { name: 'GP-04 复合函数与反函数', isLeaf: true, id: 'GP-04', link: 'pages/demo.html?id=GP-04' },
+          ]
+        },
+        {
+          name: '模块二 极限的语言(ε-N/ε-δ)',
+          children: [
+            { name: 'GP-05 ε-N定义演示', isLeaf: true, id: 'GP-05', link: 'pages/demo.html?id=GP-05' },
+            { name: 'GP-06 迫敛性(夹逼定理)', isLeaf: true, id: 'GP-06', link: 'pages/demo.html?id=GP-06' },
+            { name: 'GP-07 单调有界与数e', isLeaf: true, id: 'GP-07', link: 'pages/demo.html?id=GP-07' },
+            { name: 'GP-08 递推数列蛛网图', isLeaf: true, id: 'GP-08', link: 'pages/demo.html?id=GP-08' },
+            { name: 'GP-09 柯西收敛准则', isLeaf: true, id: 'GP-09', link: 'pages/demo.html?id=GP-09' },
+            { name: 'GP-10 ε-δ定义演示', isLeaf: true, id: 'GP-10', link: 'pages/demo.html?id=GP-10' },
+            { name: 'GP-11 单侧极限与反例', isLeaf: true, id: 'GP-11', link: 'pages/demo.html?id=GP-11' },
+          ]
+        },
+        {
+          name: '模块三 两个重要极限与无穷小',
+          children: [
+            { name: 'GP-12 sinx/x→1', isLeaf: true, id: 'GP-12', link: 'pages/demo.html?id=GP-12' },
+            { name: 'GP-13 (1+1/x)^x→e', isLeaf: true, id: 'GP-13', link: 'pages/demo.html?id=GP-13' },
+            { name: 'GP-14 无穷小量与阶', isLeaf: true, id: 'GP-14', link: 'pages/demo.html?id=GP-14' },
+            { name: 'GP-15 曲线的渐近线', isLeaf: true, id: 'GP-15', link: 'pages/demo.html?id=GP-15' },
+          ]
+        },
+        {
+          name: '模块四 函数的连续性',
+          children: [
+            { name: 'GP-16 连续与增量比', isLeaf: true, id: 'GP-16', link: 'pages/demo.html?id=GP-16' },
+            { name: 'GP-17 间断点分类', isLeaf: true, id: 'GP-17', link: 'pages/demo.html?id=GP-17' },
+            { name: 'GP-18 闭区间连续函数性质', isLeaf: true, id: 'GP-18', link: 'pages/demo.html?id=GP-18' },
+            { name: 'GP-19 一致连续', isLeaf: true, id: 'GP-19', link: 'pages/demo.html?id=GP-19' },
+          ]
+        },
+        {
+          name: '模块五 导数和微分',
+          children: [
+            { name: 'GP-20 割线趋近切线', isLeaf: true, id: 'GP-20', link: 'pages/demo.html?id=GP-20' },
+            { name: 'GP-21 瞬时速度', isLeaf: true, id: 'GP-21', link: 'pages/demo.html?id=GP-21' },
+            { name: 'GP-22 左右导数与不可导', isLeaf: true, id: 'GP-22', link: 'pages/demo.html?id=GP-22' },
+            { name: 'GP-23 参变量与极坐标切线', isLeaf: true, id: 'GP-23', link: 'pages/demo.html?id=GP-23' },
+            { name: 'GP-24 高阶导数', isLeaf: true, id: 'GP-24', link: 'pages/demo.html?id=GP-24' },
+            { name: 'GP-25 微分几何意义', isLeaf: true, id: 'GP-25', link: 'pages/demo.html?id=GP-25' },
+          ]
+        },
+        {
+          name: '模块六 微分中值定理及应用',
+          children: [
+            { name: 'GP-26 罗尔与拉格朗日', isLeaf: true, id: 'GP-26', link: 'pages/demo.html?id=GP-26' },
+            { name: 'GP-27 柯西中值定理', isLeaf: true, id: 'GP-27', link: 'pages/demo.html?id=GP-27' },
+            { name: 'GP-28 洛必达法则', isLeaf: true, id: 'GP-28', link: 'pages/demo.html?id=GP-28' },
+            { name: 'GP-29 泰勒公式逼近', isLeaf: true, id: 'GP-29', link: 'pages/demo.html?id=GP-29' },
+            { name: 'GP-30 极值判别', isLeaf: true, id: 'GP-30', link: 'pages/demo.html?id=GP-30' },
+            { name: 'GP-31 最值应用', isLeaf: true, id: 'GP-31', link: 'pages/demo.html?id=GP-31' },
+            { name: 'GP-32 凸性与拐点', isLeaf: true, id: 'GP-32', link: 'pages/demo.html?id=GP-32' },
+            { name: 'GP-33 函数图像讨论', isLeaf: true, id: 'GP-33', link: 'pages/demo.html?id=GP-33' },
+            { name: 'GP-34 牛顿切线法', isLeaf: true, id: 'GP-34', link: 'pages/demo.html?id=GP-34' },
+          ]
+        },
+        {
+          name: '模块七 实数的完备性',
+          children: [
+            { name: 'GP-35 区间套定理', isLeaf: true, id: 'GP-35', link: 'pages/demo.html?id=GP-35' },
+            { name: 'GP-36 聚点与致密性', isLeaf: true, id: 'GP-36', link: 'pages/demo.html?id=GP-36' },
+            { name: 'GP-37 有限覆盖定理', isLeaf: true, id: 'GP-37', link: 'pages/demo.html?id=GP-37' },
+            { name: 'GP-38 上极限与下极限', isLeaf: true, id: 'GP-38', link: 'pages/demo.html?id=GP-38' },
+          ]
+        },
+        {
+          name: '模块八 不定积分与定积分',
+          children: [
+            { name: 'GP-39 原函数与积分曲线族', isLeaf: true, id: 'GP-39', link: 'pages/demo.html?id=GP-39' },
+            { name: 'GP-40 换元积分法', isLeaf: true, id: 'GP-40', link: 'pages/demo.html?id=GP-40' },
+            { name: 'GP-41 分部积分与Wallis', isLeaf: true, id: 'GP-41', link: 'pages/demo.html?id=GP-41' },
+            { name: 'GP-42 黎曼和与面积', isLeaf: true, id: 'GP-42', link: 'pages/demo.html?id=GP-42' },
+            { name: 'GP-43 达布和与可积准则', isLeaf: true, id: 'GP-43', link: 'pages/demo.html?id=GP-43' },
+            { name: 'GP-44 N-L公式与变上限积分', isLeaf: true, id: 'GP-44', link: 'pages/demo.html?id=GP-44' },
+            { name: 'GP-45 积分中值定理', isLeaf: true, id: 'GP-45', link: 'pages/demo.html?id=GP-45' },
+            { name: 'GP-46 定积分换元与分部', isLeaf: true, id: 'GP-46', link: 'pages/demo.html?id=GP-46' },
+          ]
+        },
+        {
+          name: '模块九 定积分的应用',
+          children: [
+            { name: 'GP-47 平面图形面积', isLeaf: true, id: 'GP-47', link: 'pages/demo.html?id=GP-47' },
+            { name: 'GP-48 平行截面求体积', isLeaf: true, id: 'GP-48', link: 'pages/demo.html?id=GP-48' },
+            { name: 'GP-49 平面曲线弧长', isLeaf: true, id: 'GP-49', link: 'pages/demo.html?id=GP-49' },
+            { name: 'GP-50 曲率与曲率圆', isLeaf: true, id: 'GP-50', link: 'pages/demo.html?id=GP-50' },
+            { name: 'GP-51 旋转曲面面积', isLeaf: true, id: 'GP-51', link: 'pages/demo.html?id=GP-51' },
+            { name: 'GP-52 物理应用', isLeaf: true, id: 'GP-52', link: 'pages/demo.html?id=GP-52' },
+          ]
+        },
+        {
+          name: '模块十 反常积分',
+          children: [
+            { name: 'GP-53 无穷积分收敛性', isLeaf: true, id: 'GP-53', link: 'pages/demo.html?id=GP-53' },
+            { name: 'GP-54 瑕积分直观', isLeaf: true, id: 'GP-54', link: 'pages/demo.html?id=GP-54' },
+            { name: 'GP-55 比较判别法', isLeaf: true, id: 'GP-55', link: 'pages/demo.html?id=GP-55' },
+            { name: 'GP-56 狄利克雷与阿贝尔', isLeaf: true, id: 'GP-56', link: 'pages/demo.html?id=GP-56' },
+          ]
+        },
+      ]
+    };
+    // ====================================================
+
+    // 扁平化数据
+    var nodes = [], links = [];
+    function traverse(node, parent) {
+      var cat = 2; // 默认画板
+      if (!parent) cat = 0; // 中心
+      else if (node.children) cat = 1; // 模块
+      nodes.push({
+        id: node.id || node.name,
+        name: node.name,
+        category: cat,
+        link: node.link || null,
+        isLeaf: !!node.isLeaf
+      });
+      if (parent) links.push({ source: parent, target: node.id || node.name });
+      if (node.children) node.children.forEach(c => traverse(c, node.id || node.name));
+    }
+    traverse(rawData, null);
+
+    var option = {
+      tooltip: {
+        trigger: 'item',
+        formatter: function(params) {
+          if (params.data.link) return params.data.name + '<br>👉 点击跳转画板';
+          return params.data.name + '<br>📂 点击展开/收起';
+        }
+      },
+      legend: { data: ['中心','模块','画板'], top: 10, textStyle: { fontSize: 13 } },
+      series: [{
+        type: 'graph',
+        layout: 'force',
+        data: nodes,
+        links: links,
+        categories: [
+          {name:'中心', itemStyle:{color:'#C0392B'}},
+          {name:'模块', itemStyle:{color:'#2E86C1'}},
+          {name:'画板', itemStyle:{color:'#27AE60'}}
+        ],
+        roam: true,
+        draggable: true,
+        force: {
+          repulsion: 500,
+          edgeLength: [60, 140],
+          gravity: 0.12,
+          layoutAnimation: true
+        },
+        label: {
+          show: true,
+          position: 'right',
+          fontSize: 11,
+          color: '#333',
+          formatter: '{b}'
+        },
+        lineStyle: { color: '#aaa', curveness: 0.08, width: 1.2 },
+        emphasis: {
+          focus: 'adjacency',
+          lineStyle: { width: 3, color: '#2E86C1' },
+          label: { show: true, fontSize: 14, fontWeight: 'bold' }
+        },
+        // 初始只展开中心+模块，收起画板节点
+        // 通过 setOption 后手动隐藏叶子节点来实现
+      }]
+    };
+
+    chart.setOption(option);
+
+    // 点击交互
+    chart.on('click', function(params) {
+      if (params.data.link) {
+        window.location.href = params.data.link;
+        return;
+      }
+      // 展开/收起子节点（切换显隐）
+      var targetName = params.data.id || params.data.name;
+      var childNames = [];
+      links.forEach(function(l) {
+        if (l.source === targetName) childNames.push(l.target);
+      });
+      if (childNames.length === 0) return;
+
+      // 检查第一个子节点是否当前可见
+      var firstChild = nodes.find(function(n) { return n.id === childNames[0] || n.name === childNames[0]; });
+      if (!firstChild) return;
+      var currentlyVisible = chart.getOption().series[0].data.some(function(d) { return (d.id === firstChild.id || d.name === firstChild.name); });
+
+      // 重新构建数据
+      var newNodes = nodes.filter(function(n) {
+        if (childNames.indexOf(n.id || n.name) !== -1) return false; // 移除子节点
+        return true;
+      });
+
+      if (currentlyVisible) {
+        // 收起：移除子节点
+        var opt = chart.getOption();
+        opt.series[0].data = newNodes;
+        chart.setOption(opt, true);
+      } else {
+        // 展开：添加子节点回来
+        var restored = nodes.filter(function(n) {
+          return childNames.indexOf(n.id || n.name) !== -1;
+        });
+        var opt = chart.getOption();
+        opt.series[0].data = opt.series[0].data.concat(restored);
+        chart.setOption(opt, true);
+      }
+    });
+
+    // 初始只显示中心和模块（收起所有画板）
+    (function initCollapse() {
+      var opt = chart.getOption();
+      var moduleNames = rawData.children.map(function(m) { return m.name; });
+      var filteredNodes = opt.series[0].data.filter(function(n) {
+        // 保留中心和模块，隐藏画板
+        if (n.category === 2) return false;
+        return true;
+      });
+      opt.series[0].data = filteredNodes;
+      chart.setOption(opt, true);
+    })();
+
+    window.addEventListener('resize', function() { chart.resize(); });
+  </script>
 </body>
 </html>
