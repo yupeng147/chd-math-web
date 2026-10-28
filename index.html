@@ -2,233 +2,197 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数学分析（第六版·上册）知识图谱</title>
+<title>数学分析（第六版·上册）·10模块 56画板</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
-  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
-    background: #0b0e14; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #0b0e14; overflow: hidden; font-family: "Microsoft YaHei", sans-serif; }
   #chart { width: 100vw; height: 100vh; }
-
-  #title { position: absolute; left: 22px; top: 18px; z-index: 10; color: #fff;
-    font-size: 17px; font-weight: 700; letter-spacing: 1px;
-    background: rgba(15,17,23,.72); padding: 9px 16px; border-radius: 10px;
-    border: 1px solid #26303d; backdrop-filter: blur(6px); }
-
-  #legend { position: absolute; right: 18px; bottom: 18px; z-index: 10;
-    background: rgba(15,17,23,.88); border: 1px solid #26303d; border-radius: 10px;
-    padding: 12px 16px; color: #c9d1d9; font-size: 12px; max-height: 75vh;
-    overflow-y: auto; backdrop-filter: blur(6px); }
-  #legend .item { display: flex; align-items: center; margin: 5px 0; white-space: nowrap; }
-  #legend .dot { width: 11px; height: 11px; border-radius: 50%; margin-right: 9px;
-    box-shadow: 0 0 7px rgba(255,255,255,.3); flex-shrink: 0; }
-  #legend .center-dot { width: 14px; height: 14px; border-radius: 50%; background: #00e5ff;
-    margin-right: 9px; box-shadow: 0 0 10px #00e5ff; }
-
-  #tip { position: absolute; left: 22px; bottom: 18px; z-index: 10; color: #9aa6b4;
-    font-size: 12px; line-height: 1.9; background: rgba(15,17,23,.72);
-    padding: 9px 14px; border-radius: 10px; border: 1px solid #26303d; }
-  #tip b { color: #8ab4f8; }
+  #legend { position: absolute; right: 15px; bottom: 15px; background: rgba(15,17,23,.85); color: #ccc; padding: 10px 14px; border-radius: 6px; font-size: 12px; border: 1px solid #333; z-index: 10; backdrop-filter: blur(4px); }
+  #legend .item { display: flex; align-items: center; margin: 5px 0; }
+  #legend .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 4px rgba(255,255,255,.3); }
+  #legend .center-dot { width: 12px; height: 12px; border-radius: 50%; background: #00ffff; margin-right: 8px; box-shadow: 0 0 8px #00ffff; }
+  #info { position: absolute; left: 15px; top: 15px; color: #fff; background: rgba(15,17,23,.7); padding: 8px 12px; border-radius: 6px; font-size: 13px; z-index: 10; }
 </style>
 </head>
 <body>
-
-<div id="title">数学分析（第六版·上册）· 10模块 56画板</div>
+<div id="info">数学分析（第六版·上册）·10模块 56画板</div>
 <div id="chart"></div>
 <div id="legend"></div>
-<div id="tip">
-  <b>滚轮</b> 缩放 · <b>拖动画布</b> 平移 · <b>拖节点</b> 移动<br>
-  <b>单击模块</b> 聚焦 · <b>再单击</b> 还原 · <b>双击空白</b> 归位<br>
-  <b>单击 GP 节点</b> 跳转画板
-</div>
-
 <script>
 var chart = echarts.init(document.getElementById("chart"));
 var focused = null;
+var currentZoom = 1;
 
-/* ============ 10模块 + 56画板（完整对齐清单） ============ */
+// 模块配置
 var modules = [
-  { id: "m1",  name: "模块一 实数集与函数",         color: "#FF6B6B", angle: -Math.PI/2 + 0.05 },
-  { id: "m2",  name: "模块二 极限的语言(ε-N/ε-δ)", color: "#FFC93C", angle: -Math.PI/3 },
-  { id: "m3",  name: "模块三 两个重要极限与无穷小", color: "#FFA502", angle: -Math.PI/6 },
-  { id: "m4",  name: "模块四 函数的连续性",         color: "#2ED573", angle:  0 },
-  { id: "m5",  name: "模块五 导数和微分",          color: "#00E5FF", angle:  Math.PI/6 },
-  { id: "m6",  name: "模块六 微分中值定理及应用",    color: "#1E90FF", angle:  Math.PI/3 },
-  { id: "m7",  name: "模块七 实数的完备性",         color: "#70A1FF", angle:  Math.PI*0.42 },
-  { id: "m8",  name: "模块八 不定积分与定积分",      color: "#A29BFE", angle:  Math.PI*0.72 },
-  { id: "m9",  name: "模块九 定积分的应用",         color: "#FF79C6", angle:  Math.PI*1.05 },
-  { id: "m10", name: "模块十 反常积分",            color: "#FF5252", angle:  Math.PI*1.32 }
+  { id: "m1", name: "模块一 实数集与函数", short: "实数集与函数", color: "#ff6b6b", angle: -60 },
+  { id: "m2", name: "模块二 极限的语言(ε-N/ε-δ)", short: "极限语言", color: "#ffa502", angle: -30 },
+  { id: "m3", name: "模块三 两个重要极限与无穷小", short: "重要极限", color: "#ffcc00", angle: 0 },
+  { id: "m4", name: "模块四 函数的连续性", short: "连续性", color: "#2ed573", angle: 30 },
+  { id: "m5", name: "模块五 导数和微分", short: "导数微分", color: "#1e90ff", angle: 60 },
+  { id: "m6", name: "模块六 微分中值定理及应用", short: "中值定理", color: "#00ffff", angle: 90 },
+  { id: "m7", name: "模块七 实数的完备性", short: "实数完备", color: "#70a1ff", angle: 120 },
+  { id: "m8", name: "模块八 不定积分与定积分", short: "不定与定积", color: "#a29bfe", angle: 150 },
+  { id: "m9", name: "模块九 定积分的应用", short: "积分应用", color: "#fd79a8", angle: 180 },
+  { id: "m10", name: "模块十 反常积分", short: "反常积分", color: "#ff4757", angle: 210 }
 ];
 
+// 末端数据 (按模块顺序分配，共56个)
 var gps = [
-  { mod: "m1",  list: ["GP-01 区间与邻域","GP-02 确界原理","GP-03 函数图像变换","GP-04 复合与反函数"] },
-  { mod: "m2",  list: ["GP-05 ε-N定义演示","GP-06 迫敛性(夹逼)","GP-07 单调有界与数e","GP-08 递推数列蛛网","GP-09 柯西收敛准则","GP-10 ε-δ定义演示","GP-11 单侧极限与反例"] },
-  { mod: "m3",  list: ["GP-12 sinx/x→1","GP-13 (1+1/x)^x→e","GP-14 无穷小与阶","GP-15 曲线渐近线"] },
-  { mod: "m4",  list: ["GP-16 连续与增量比","GP-17 间断点分类","GP-18 闭区间连续性质","GP-19 一致连续"] },
-  { mod: "m5",  list: ["GP-20 割线趋近切线","GP-21 瞬时速度","GP-22 左右导数与不可导","GP-23 参变量与极坐标切线","GP-24 高阶导数","GP-25 微分几何意义"] },
-  { mod: "m6",  list: ["GP-26 罗尔与拉格朗日","GP-27 柯西中值定理","GP-28 洛必达法则","GP-29 泰勒公式逼近","GP-30 极值判别","GP-31 最值应用","GP-32 凸性与拐点","GP-33 函数图像讨论","GP-34 牛顿切线法"] },
-  { mod: "m7",  list: ["GP-35 区间套定理","GP-36 聚点与致密性","GP-37 有限覆盖定理","GP-38 上极限与下极限"] },
-  { mod: "m8",  list: ["GP-39 原函数与积分曲线族","GP-40 换元积分法","GP-41 分部积分与Wallis","GP-42 黎曼和与面积","GP-43 达布和与可积准则","GP-44 N-L公式与变上限积分","GP-45 积分中值定理","GP-46 定积分换元与分部"] },
-  { mod: "m9",  list: ["GP-47 平面图形面积","GP-48 平行截面求体积","GP-49 平面曲线弧长","GP-50 曲率与曲率圆","GP-51 旋转曲面面积","GP-52 物理应用"] },
-  { mod: "m10", list: ["GP-53 无穷积分收敛性","GP-54 瑕积分直观","GP-55 比较判别法","GP-56 狄利克雷与阿贝尔"] }
+  // m1 (5个)
+  { mod: "m1", gp: "GP-01", name: "区间与邻域" }, { mod: "m1", gp: "GP-02", name: "确界原理" },
+  { mod: "m1", gp: "GP-03", name: "函数图像变换" }, { mod: "m1", gp: "GP-54", name: "积分直曲" },
+  { mod: "m1", gp: "GP-55", name: "比较判别法" },
+  // m2 (8个)
+  { mod: "m2", gp: "GP-04", name: "数列极限" }, { mod: "m2", gp: "GP-05", name: "ε-N定义演示" },
+  { mod: "m2", gp: "GP-06", name: "极限性质" }, { mod: "m2", gp: "GP-07", name: "单调有界" },
+  { mod: "m2", gp: "GP-08", name: "柯西收敛" }, { mod: "m2", gp: "GP-09", name: "子列极限" },
+  { mod: "m2", gp: "GP-10", name: "ε-δ定义演示" }, { mod: "m2", gp: "GP-11", name: "单侧极限" },
+  // m3 (4个)
+  { mod: "m3", gp: "GP-12", name: "sin(x)/x→1" }, { mod: "m3", gp: "GP-13", name: "(1+1/n)^n→e" },
+  { mod: "m3", gp: "GP-14", name: "无穷小比较" }, { mod: "m3", gp: "GP-15", name: "曲线渐近线" },
+  // m4 (4个)
+  { mod: "m4", gp: "GP-16", name: "连续与间断" }, { mod: "m4", gp: "GP-17", name: "间断点分类" },
+  { mod: "m4", gp: "GP-18", name: "区间连续性质" }, { mod: "m4", gp: "GP-19", name: "一致连续" },
+  // m5 (5个)
+  { mod: "m5", gp: "GP-20", name: "切线与导数" }, { mod: "m5", gp: "GP-21", name: "瞬时速度" },
+  { mod: "m5", gp: "GP-22", name: "左右导数" }, { mod: "m5", gp: "GP-23", name: "求导公式" },
+  { mod: "m5", gp: "GP-24", name: "高阶导数" },
+  // m6 (9个，最密集)
+  { mod: "m6", gp: "GP-25", name: "费马定理" }, { mod: "m6", gp: "GP-26", name: "罗尔定理" },
+  { mod: "m6", gp: "GP-27", name: "拉格朗日" }, { mod: "m6", gp: "GP-28", name: "柯西中值" },
+  { mod: "m6", gp: "GP-29", name: "洛必达法则" }, { mod: "m6", gp: "GP-30", name: "泰勒公式" },
+  { mod: "m6", gp: "GP-31", name: "极值应用" }, { mod: "m6", gp: "GP-32", name: "凸性与拐点" },
+  { mod: "m6", gp: "GP-33", name: "作图讨论" },
+  // m7 (4个)
+  { mod: "m7", gp: "GP-34", name: "上确界" }, { mod: "m7", gp: "GP-35", name: "有限覆盖" },
+  { mod: "m7", gp: "GP-36", name: "完备性定理" }, { mod: "m7", gp: "GP-37", name: "实数构造" },
+  // m8 (8个，密集)
+  { mod: "m8", gp: "GP-38", name: "原函数" }, { mod: "m8", gp: "GP-39", name: "积分线性" },
+  { mod: "m8", gp: "GP-40", name: "换元积分" }, { mod: "m8", gp: "GP-41", name: "分部积分" },
+  { mod: "m8", gp: "GP-42", name: "有理函数" }, { mod: "m8", gp: "GP-43", name: "达布和" },
+  { mod: "m8", gp: "GP-44", name: "定积分定义" }, { mod: "m8", gp: "GP-45", name: "微积分基本" },
+  // m9 (5个)
+  { mod: "m9", gp: "GP-46", name: "面积体积" }, { mod: "m9", gp: "GP-47", name: "平面曲线长" },
+  { mod: "m9", gp: "GP-48", name: "平行截面" }, { mod: "m9", gp: "GP-49", name: "旋转曲面" },
+  { mod: "m9", gp: "GP-50", name: "曲率与曲率圆" },
+  // m10 (4个)
+  { mod: "m10", gp: "GP-51", name: "旋转曲面" }, { mod: "m10", gp: "GP-52", name: "物理应用" },
+  { mod: "m10", gp: "GP-53", name: "无穷积分" }, { mod: "m10", gp: "GP-56", name: "狄利克雷" }
 ];
 
 var nodes = [];
 var links = [];
-var R_MOD = 330;   // 模块层半径
-var R_GP  = 470;   // 末端层半径（拉开距离，避免文字挤）
+var R_CENTER = 0, R_MOD = 320, R_GP_BASE = 430;
 
-/* ---- 中心节点 ---- */
-nodes.push({
-  id: "center", name: "数学分析\n(第六版·上册)", isCenter: true,
-  x: 0, y: 0, symbolSize: 62, fixed: true,
-  itemStyle: { color: "#00E5FF", shadowBlur: 30, shadowColor: "#00E5FF" },
-  label: { show: true, fontSize: 15, fontWeight: "bold", color: "#fff", position: "inside" }
-});
+// 中心节点
+nodes.push({ id: "center", name: "数学分析\n(第六版·上册)", isCenter: true, x: 0, y: 0, symbolSize: 55, itemStyle: { color: "#00ffff", shadowBlur: 25, shadowColor: "#00ffff" }, label: { show: true, fontSize: 14, fontWeight: "bold", color: "#fff" } });
 
-/* ---- 模块 + 末端节点 ---- */
+// 模块节点
 modules.forEach(function (m) {
-  var mx = R_MOD * Math.cos(m.angle);
-  var my = R_MOD * Math.sin(m.angle);
-
-  nodes.push({
-    id: m.id, name: m.name, isModule: true, modColor: m.color,
-    x: mx, y: my, symbolSize: 40, fixed: true,
-    itemStyle: { color: m.color, shadowBlur: 16, shadowColor: m.color },
-    label: { show: true, fontSize: 12.5, color: "#fff", fontWeight: "bold",
-      backgroundColor: "rgba(0,0,0,.6)", padding: [3,7], borderRadius: 5 }
-  });
-  links.push({ source: "center", target: m.id,
-    lineStyle: { color: m.color, opacity: 0.45, width: 1.6 } });
-
-  var gpData = gps.find(function (g) { return g.mod === m.id; });
-  if (!gpData) return;
-
-  var count = gpData.list.length;
-  var isRight = Math.cos(m.angle) > 0;
-  var spread = Math.min(0.62, count * 0.075);   // 扇形展开幅度
-
-  gpData.list.forEach(function (full, i) {
-    var t = count === 1 ? 0 : (i / (count - 1)) - 0.5;
-    var ang = m.angle + t * spread;
-    var offset = (i % 2 === 0 ? 1 : -1) * (count > 6 ? 16 : 0); // 上下交错
-
-    var gx = R_GP * Math.cos(ang) + (isRight ? 22 : -22);
-    var gy = R_GP * Math.sin(ang) + offset;
-
-    var gpId = full.split(" ")[0]; // "GP-01"
-
-    nodes.push({
-      id: gpId, name: full, fullName: full, modName: m.id, modColor: m.color,
-      x: gx, y: gy, fixed: true, symbolSize: 12,
-      itemStyle: { color: m.color, opacity: 0.9 },
-      label: {
-        show: true,
-        position: isRight ? "right" : "left",
-        distance: 10,
-        fontSize: 10.5, color: "#e6edf3",
-        backgroundColor: "rgba(11,14,20,.75)", padding: [2,5], borderRadius: 3,
-        formatter: full
-      },
-      link: "pages/demo.html?id=" + gpId
-    });
-    links.push({ source: m.id, target: gpId,
-      lineStyle: { color: m.color, opacity: 0.28, width: 1, curveness: 0.03 } });
-  });
+  var rad = m.angle * Math.PI / 180;
+  var mx = R_MOD * Math.cos(rad), my = R_MOD * Math.sin(rad);
+  nodes.push({ id: m.id, name: m.short, fullName: m.name, isModule: true, modColor: m.color, x: mx, y: my, symbolSize: 38, itemStyle: { color: m.color, shadowBlur: 15, shadowColor: m.color }, label: { show: true, fontSize: 12, color: "#fff", fontWeight: "bold" } });
+  links.push({ source: "center", target: m.id, lineStyle: { color: m.color, opacity: 0.4, width: 1.5 } });
 });
 
-/* ============ 序列构建（聚焦时只改状态，不重建数据） ============ */
-function buildSeries() {
-  var data = nodes.map(function (n) {
-    var nd = {
-      id: n.id, name: n.name, x: n.x, y: n.y, symbolSize: n.symbolSize,
-      itemStyle: Object.assign({}, n.itemStyle),
-      label: Object.assign({}, n.label),
-      fixed: true
-    };
-    if (n.isCenter) nd.isCenter = true;
-    if (n.isModule) { nd.isModule = true; nd.modColor = n.modColor; }
-    if (n.link) { nd.link = n.link; nd.fullName = n.fullName; }
-    nd.modName = n.modName;
+// 末端节点（动态错落 + 换行标签）
+gps.forEach(function (g) {
+  var m = modules.find(function (x) { return x.id === g.mod; });
+  var rad = m.angle * Math.PI / 180;
+  var count = gps.filter(function (x) { return x.mod === g.mod; }).length;
+  var idx = gps.filter(function (x) { return x.mod === g.mod && x.gp <= g.gp; }).length - 1;
+  
+  // 扇形展开角度（密集模块增大跨度）
+  var span = count > 6 ? 0.35 : 0.25;
+  var offset = (idx - (count - 1) / 2) * span;
+  var finalRad = rad + offset;
+  
+  // 距离：密集模块稍远，交错错落
+  var dist = R_GP_BASE + (count > 6 ? 40 : 0) + (idx % 2 === 0 ? 15 : -15);
+  var gx = (R_MOD + dist) * Math.cos(finalRad);
+  var gy = (R_MOD + dist) * Math.sin(finalRad);
+  
+  // 标签换行处理（长名称折行）
+  var labelText = g.gp + " " + g.name;
+  var lines = labelText.length > 12 ? g.gp + "\n" + g.name : labelText;
+  
+  nodes.push({
+    id: g.gp, name: labelText, fullName: g.name, modName: g.mod, gp: g.gp,
+    x: gx, y: gy, symbolSize: 14,
+    itemStyle: { color: m.color, opacity: 0.85, shadowBlur: 6, shadowColor: m.color },
+    label: {
+      show: true, formatter: lines, fontSize: 10, color: "#e6edf3",
+      position: Math.cos(finalRad) > 0 ? "right" : "left",
+      distance: 8, backgroundColor: "rgba(11,14,20,0.75)", padding: [2, 5], borderRadius: 3,
+      borderColor: m.color, borderWidth: 0.5, lineHeight: 14
+    }
+  });
+  links.push({ source: m.id, target: g.gp, lineStyle: { color: m.color, opacity: 0.3, width: 1, curveness: 0.02 } });
+});
 
+// 缩放监听：动态调参，缩小不糊
+chart.on("datazoom", function () { currentZoom = chart.getOption().series[0].zoom || 1; });
+chart.on("mousewheel", function () { setTimeout(function () { currentZoom = chart.getOption().series[0].zoom || 1; }, 50); });
+
+function buildSeries() {
+  var z = currentZoom;
+  var fontSizeMod = Math.max(9, 12 / Math.sqrt(z));
+  var fontSizeGp = Math.max(8, 10 / Math.sqrt(z));
+  var distFactor = z < 0.6 ? 0.8 : 1; // 缩小时拉近标签
+  
+  var data = nodes.map(function (n) {
+    var nd = Object.assign({}, n);
+    nd.label = Object.assign({}, n.label, { fontSize: n.isModule ? fontSizeMod : fontSizeGp, distance: (n.isModule ? 10 : 8) * distFactor });
+    nd.symbolSize = n.isCenter ? 55 / Math.sqrt(z) : n.isModule ? 38 / Math.sqrt(z) : 14 / Math.sqrt(z);
+    
     if (focused) {
-      if (nd.isModule && nd.id === focused) {
-        nd.symbolSize = 52; nd.itemStyle.shadowBlur = 28; nd.label.fontSize = 15;
-      } else if (nd.modName === focused) {
-        nd.symbolSize = 17; nd.itemStyle.opacity = 1; nd.label.fontSize = 12; nd.label.opacity = 1;
-      } else if (!nd.isCenter) {
-        nd.itemStyle.opacity = 0.2; nd.label.opacity = 0.18;
-      }
+      if (nd.isModule && nd.id === focused) { nd.symbolSize *= 1.3; nd.label.fontSize = 14; nd.itemStyle.shadowBlur = 25; }
+      else if (nd.modName === focused) { nd.symbolSize *= 1.1; nd.itemStyle.opacity = 1; nd.label.opacity = 1; }
+      else if (nd.id !== "center") { nd.itemStyle.opacity = 0.2; nd.label.opacity = 0.2; }
     }
     return nd;
   });
-
+  
   var lks = links.map(function (l) {
-    var ld = { source: l.source, target: l.target, lineStyle: Object.assign({}, l.lineStyle) };
-    if (focused && (l.source === focused || l.target === focused)) {
-      ld.lineStyle = { color: (nodes.find(function (nn) { return nn.id === focused; }) || {}).modColor || l.lineStyle.color, opacity: 0.8, width: 2.3 };
-    } else if (focused) {
-      ld.lineStyle = Object.assign({}, ld.lineStyle, { opacity: 0.06 });
-    }
+    var ld = Object.assign({}, l);
+    if (focused && (l.source === focused || l.target === focused)) ld.lineStyle = Object.assign({}, ld.lineStyle, { opacity: 0.8, width: 2 });
+    else if (focused) ld.lineStyle = Object.assign({}, ld.lineStyle, { opacity: 0.05 });
     return ld;
   });
 
   return {
-    type: "graph",
-    coordinateSystem: "view",   // 逻辑坐标，模块固定不漂移
-    layout: "none",
-    data: data, links: lks,
-    roam: true, draggable: true,
-    zoom: 1, center: [0, 0],
-    lineStyle: { curveness: 0.03 },
-    emphasis: { focus: "adjacency", scale: 1.15,
-      label: { show: true, fontSize: 13, fontWeight: "bold" },
-      itemStyle: { shadowBlur: 20 } },
-    blur: { label: { opacity: 0.35 } }
+    type: "graph", coordinateSystem: "view", layout: "none",
+    data: data, links: lks, roam: true, draggable: true, zoom: 1, center: [0, 0],
+    lineStyle: { curveness: 0.02 },
+    emphasis: { focus: "adjacency", scale: 1.15, label: { show: true }, itemStyle: { shadowBlur: 20 } },
+    blur: { label: { opacity: 0.3 } }
   };
 }
 
 chart.setOption({
   backgroundColor: "#0b0e14",
   tooltip: {
-    trigger: "item",
-    backgroundColor: "rgba(20,24,32,.97)", borderColor: "#3b82f6", borderWidth: 1,
-    textStyle: { color: "#e6edf3", fontSize: 12.5 },
+    trigger: "item", backgroundColor: "rgba(20,24,32,.97)", borderColor: "#3b82f6", textStyle: { color: "#e6edf3" },
     formatter: function (p) {
       var d = p.data;
-      if (d.link) return '<b style="color:#fff">' + d.fullName + '</b><br><span style="color:#34d399">➤ 点击跳转交互式画板</span>';
-      if (d.isModule) {
-        var cnt = nodes.filter(function (n) { return n.modName === d.id; }).length;
-        return '<b style="color:' + d.modColor + '">' + d.name + '</b><br>含 ' + cnt + ' 个画板知识点<br><span style="color:#fbbf24">🖱 单击聚焦放大</span>';
-      }
-      if (d.isCenter) return '<b style="color:#fff">数学分析（第六版·上册）</b><br>共 10 个模块 · 56 个交互式画板';
-      return '<b style="color:#fff">' + d.fullName + '</b>';
+      if (d.isCenter) return "<b>数学分析（第六版·上册）</b><br>10模块 · 56画板";
+      if (d.isModule) { var cnt = nodes.filter(function (n) { return n.modName === d.id; }).length; return "<b style='color:" + d.modColor + "'>" + d.fullName + "</b><br>含 " + cnt + " 个画板<br>🖱 单击聚焦"; }
+      return "<b>" + d.gp + "</b> " + d.fullName + "<br><span style='color:#888'>归属: " + (modules.find(function (m) { return m.id === d.modName; }) || {}).short + "</span>";
     }
   },
   series: [buildSeries()]
 });
 
-/* ============ 交互 ============ */
 chart.on("click", function (params) {
   var d = params.data;
-  if (d.link) { window.location.href = d.link; return; }
-  if (d.isModule) {
-    focused = (focused === d.id) ? null : d.id;
-    chart.setOption({ series: [buildSeries()] }, true); // merge：保留缩放/平移状态
-  }
+  if (d.isModule) { focused = (focused === d.id) ? null : d.id; chart.setOption({ series: [buildSeries()] }, true); }
 });
+chart.getZr().on("dblclick", function (e) { if (!e.target) { focused = null; chart.setOption({ series: [buildSeries()] }, true); } });
 
-chart.getZr().on("dblclick", function (e) {
-  if (!e.target) { focused = null; chart.setOption({ series: [buildSeries()] }, true); }
-});
-
-/* ============ 图例 ============ */
 (function () {
   var html = '<div class="item"><span class="center-dot"></span>中心节点</div>';
-  modules.forEach(function (m) {
-    var short = m.name.replace(" 极限的语言(ε-N/ε-δ)", " 极限").replace(" 定积分", " 积分");
-    html += '<div class="item"><span class="dot" style="background:' + m.color + '"></span>' + short + '</div>';
-  });
+  modules.forEach(function (m) { html += '<div class="item"><span class="dot" style="background:' + m.color + '"></span>' + m.short + '</div>'; });
   document.getElementById("legend").innerHTML = html;
 })();
 
