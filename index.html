@@ -2,264 +2,324 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>数学分析 - 知识图谱导航</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高等数学（一）· 交互式知识图谱</title>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Microsoft YaHei", sans-serif; }
-    #graph { width: 100vw; height: 100vh; background: #f8f9fa; }
-    .tip { position: absolute; top: 10px; left: 10px; color: #666; font-size: 14px; z-index: 10; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .legend-tag { position: absolute; bottom: 20px; left: 10px; background: rgba(255,255,255,0.95); padding: 10px 14px; border-radius: 6px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); line-height: 1.8; }
-    .legend-tag span { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0f1117; overflow: hidden; font-family: "Microsoft YaHei", sans-serif; }
+    #chart { width: 100vw; height: 100vh; }
+
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 20;
+      display: flex; align-items: center; padding: 0 20px;
+      background: linear-gradient(180deg, rgba(15,17,23,.96), rgba(15,17,23,.55));
+    }
+    .header .logo {
+      width: 30px; height: 30px; border-radius: 8px; margin-right: 12px;
+      background: linear-gradient(135deg, #1a73e8, #8ab4f8);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 16px;
+    }
+    .header h1 { color: #fff; font-size: 17px; font-weight: 600; letter-spacing: .5px; }
+    .header .sub { color: #8ab4f8; font-size: 12px; margin-left: 12px; opacity: .9; }
+
+    .tip {
+      position: fixed; bottom: 18px; left: 20px; z-index: 20;
+      color: #c9d1d9; font-size: 12.5px; line-height: 1.9;
+      background: rgba(20,24,33,.85); padding: 10px 16px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(6px);
+    }
+    .tip b { color: #8ab4f8; }
+
+    .legend {
+      position: fixed; bottom: 18px; right: 20px; z-index: 20;
+      background: rgba(20,24,33,.85); padding: 12px 16px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(6px);
+      font-size: 12px; line-height: 2; color: #c9d1d9; max-height: 60vh; overflow-y: auto;
+    }
+    .legend .item { display: flex; align-items: center; }
+    .legend .dot { width: 11px; height: 11px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+    .legend .center-dot { width: 13px; height: 13px; border-radius: 4px; margin-right: 8px; background: #1a73e8; }
   </style>
 </head>
 <body>
+  <div class="header">
+    <div class="logo">Σ</div>
+    <h1>数学分析 · 交互式知识图谱</h1>
+    <span class="sub">华东师范大学《数学分析》第六版（上册）· 共10模块 56画板</span>
+  </div>
+
+  <div id="chart"></div>
+
   <div class="tip">
-    📌 <b>数学分析（华师大第六版·上册）</b><br>
-    滚轮缩放 · 拖拽画布 · 点击模块展开/收起 · 点击知识点跳转画板
+    <b>滚轮</b> 缩放 · <b>拖动画布</b> 平移 · <b>拖动节点</b> 移动<br>
+    <b>单击章节</b> 聚焦放大 · <b>再单击</b> 还原 · <b>双击空白</b> 归位<br>
+    <b>单击末端节点</b> 跳转交互式画板
   </div>
-  <div class="legend-tag">
-    <span style="background:#C0392B"></span>中心
-    <span style="background:#2E86C1; margin-left:8px;"></span>模块
-    <span style="background:#27AE60; margin-left:8px;"></span>画板(A/B/C级)
-  </div>
-  <div id="graph"></div>
+
+  <div class="legend" id="legend"></div>
+
   <script>
-    var chart = echarts.init(document.getElementById('graph'));
+    var chart = echarts.init(document.getElementById('chart'));
 
-    // ============ 真实数据（来自画板制作清单） ============
-    var rawData = {
-      name: '数学分析（第六版·上册）',
-      children: [
-        {
-          name: '模块一 实数集与函数',
-          children: [
-            { name: 'GP-01 区间与邻域', isLeaf: true, id: 'GP-01', link: 'pages/demo.html?id=GP-01' },
-            { name: 'GP-02 确界原理', isLeaf: true, id: 'GP-02', link: 'pages/demo.html?id=GP-02' },
-            { name: 'GP-03 函数图像变换', isLeaf: true, id: 'GP-03', link: 'pages/demo.html?id=GP-03' },
-            { name: 'GP-04 复合函数与反函数', isLeaf: true, id: 'GP-04', link: 'pages/demo.html?id=GP-04' },
-          ]
-        },
-        {
-          name: '模块二 极限的语言(ε-N/ε-δ)',
-          children: [
-            { name: 'GP-05 ε-N定义演示', isLeaf: true, id: 'GP-05', link: 'pages/demo.html?id=GP-05' },
-            { name: 'GP-06 迫敛性(夹逼定理)', isLeaf: true, id: 'GP-06', link: 'pages/demo.html?id=GP-06' },
-            { name: 'GP-07 单调有界与数e', isLeaf: true, id: 'GP-07', link: 'pages/demo.html?id=GP-07' },
-            { name: 'GP-08 递推数列蛛网图', isLeaf: true, id: 'GP-08', link: 'pages/demo.html?id=GP-08' },
-            { name: 'GP-09 柯西收敛准则', isLeaf: true, id: 'GP-09', link: 'pages/demo.html?id=GP-09' },
-            { name: 'GP-10 ε-δ定义演示', isLeaf: true, id: 'GP-10', link: 'pages/demo.html?id=GP-10' },
-            { name: 'GP-11 单侧极限与反例', isLeaf: true, id: 'GP-11', link: 'pages/demo.html?id=GP-11' },
-          ]
-        },
-        {
-          name: '模块三 两个重要极限与无穷小',
-          children: [
-            { name: 'GP-12 sinx/x→1', isLeaf: true, id: 'GP-12', link: 'pages/demo.html?id=GP-12' },
-            { name: 'GP-13 (1+1/x)^x→e', isLeaf: true, id: 'GP-13', link: 'pages/demo.html?id=GP-13' },
-            { name: 'GP-14 无穷小量与阶', isLeaf: true, id: 'GP-14', link: 'pages/demo.html?id=GP-14' },
-            { name: 'GP-15 曲线的渐近线', isLeaf: true, id: 'GP-15', link: 'pages/demo.html?id=GP-15' },
-          ]
-        },
-        {
-          name: '模块四 函数的连续性',
-          children: [
-            { name: 'GP-16 连续与增量比', isLeaf: true, id: 'GP-16', link: 'pages/demo.html?id=GP-16' },
-            { name: 'GP-17 间断点分类', isLeaf: true, id: 'GP-17', link: 'pages/demo.html?id=GP-17' },
-            { name: 'GP-18 闭区间连续函数性质', isLeaf: true, id: 'GP-18', link: 'pages/demo.html?id=GP-18' },
-            { name: 'GP-19 一致连续', isLeaf: true, id: 'GP-19', link: 'pages/demo.html?id=GP-19' },
-          ]
-        },
-        {
-          name: '模块五 导数和微分',
-          children: [
-            { name: 'GP-20 割线趋近切线', isLeaf: true, id: 'GP-20', link: 'pages/demo.html?id=GP-20' },
-            { name: 'GP-21 瞬时速度', isLeaf: true, id: 'GP-21', link: 'pages/demo.html?id=GP-21' },
-            { name: 'GP-22 左右导数与不可导', isLeaf: true, id: 'GP-22', link: 'pages/demo.html?id=GP-22' },
-            { name: 'GP-23 参变量与极坐标切线', isLeaf: true, id: 'GP-23', link: 'pages/demo.html?id=GP-23' },
-            { name: 'GP-24 高阶导数', isLeaf: true, id: 'GP-24', link: 'pages/demo.html?id=GP-24' },
-            { name: 'GP-25 微分几何意义', isLeaf: true, id: 'GP-25', link: 'pages/demo.html?id=GP-25' },
-          ]
-        },
-        {
-          name: '模块六 微分中值定理及应用',
-          children: [
-            { name: 'GP-26 罗尔与拉格朗日', isLeaf: true, id: 'GP-26', link: 'pages/demo.html?id=GP-26' },
-            { name: 'GP-27 柯西中值定理', isLeaf: true, id: 'GP-27', link: 'pages/demo.html?id=GP-27' },
-            { name: 'GP-28 洛必达法则', isLeaf: true, id: 'GP-28', link: 'pages/demo.html?id=GP-28' },
-            { name: 'GP-29 泰勒公式逼近', isLeaf: true, id: 'GP-29', link: 'pages/demo.html?id=GP-29' },
-            { name: 'GP-30 极值判别', isLeaf: true, id: 'GP-30', link: 'pages/demo.html?id=GP-30' },
-            { name: 'GP-31 最值应用', isLeaf: true, id: 'GP-31', link: 'pages/demo.html?id=GP-31' },
-            { name: 'GP-32 凸性与拐点', isLeaf: true, id: 'GP-32', link: 'pages/demo.html?id=GP-32' },
-            { name: 'GP-33 函数图像讨论', isLeaf: true, id: 'GP-33', link: 'pages/demo.html?id=GP-33' },
-            { name: 'GP-34 牛顿切线法', isLeaf: true, id: 'GP-34', link: 'pages/demo.html?id=GP-34' },
-          ]
-        },
-        {
-          name: '模块七 实数的完备性',
-          children: [
-            { name: 'GP-35 区间套定理', isLeaf: true, id: 'GP-35', link: 'pages/demo.html?id=GP-35' },
-            { name: 'GP-36 聚点与致密性', isLeaf: true, id: 'GP-36', link: 'pages/demo.html?id=GP-36' },
-            { name: 'GP-37 有限覆盖定理', isLeaf: true, id: 'GP-37', link: 'pages/demo.html?id=GP-37' },
-            { name: 'GP-38 上极限与下极限', isLeaf: true, id: 'GP-38', link: 'pages/demo.html?id=GP-38' },
-          ]
-        },
-        {
-          name: '模块八 不定积分与定积分',
-          children: [
-            { name: 'GP-39 原函数与积分曲线族', isLeaf: true, id: 'GP-39', link: 'pages/demo.html?id=GP-39' },
-            { name: 'GP-40 换元积分法', isLeaf: true, id: 'GP-40', link: 'pages/demo.html?id=GP-40' },
-            { name: 'GP-41 分部积分与Wallis', isLeaf: true, id: 'GP-41', link: 'pages/demo.html?id=GP-41' },
-            { name: 'GP-42 黎曼和与面积', isLeaf: true, id: 'GP-42', link: 'pages/demo.html?id=GP-42' },
-            { name: 'GP-43 达布和与可积准则', isLeaf: true, id: 'GP-43', link: 'pages/demo.html?id=GP-43' },
-            { name: 'GP-44 N-L公式与变上限积分', isLeaf: true, id: 'GP-44', link: 'pages/demo.html?id=GP-44' },
-            { name: 'GP-45 积分中值定理', isLeaf: true, id: 'GP-45', link: 'pages/demo.html?id=GP-45' },
-            { name: 'GP-46 定积分换元与分部', isLeaf: true, id: 'GP-46', link: 'pages/demo.html?id=GP-46' },
-          ]
-        },
-        {
-          name: '模块九 定积分的应用',
-          children: [
-            { name: 'GP-47 平面图形面积', isLeaf: true, id: 'GP-47', link: 'pages/demo.html?id=GP-47' },
-            { name: 'GP-48 平行截面求体积', isLeaf: true, id: 'GP-48', link: 'pages/demo.html?id=GP-48' },
-            { name: 'GP-49 平面曲线弧长', isLeaf: true, id: 'GP-49', link: 'pages/demo.html?id=GP-49' },
-            { name: 'GP-50 曲率与曲率圆', isLeaf: true, id: 'GP-50', link: 'pages/demo.html?id=GP-50' },
-            { name: 'GP-51 旋转曲面面积', isLeaf: true, id: 'GP-51', link: 'pages/demo.html?id=GP-51' },
-            { name: 'GP-52 物理应用', isLeaf: true, id: 'GP-52', link: 'pages/demo.html?id=GP-52' },
-          ]
-        },
-        {
-          name: '模块十 反常积分',
-          children: [
-            { name: 'GP-53 无穷积分收敛性', isLeaf: true, id: 'GP-53', link: 'pages/demo.html?id=GP-53' },
-            { name: 'GP-54 瑕积分直观', isLeaf: true, id: 'GP-54', link: 'pages/demo.html?id=GP-54' },
-            { name: 'GP-55 比较判别法', isLeaf: true, id: 'GP-55', link: 'pages/demo.html?id=GP-55' },
-            { name: 'GP-56 狄利克雷与阿贝尔', isLeaf: true, id: 'GP-56', link: 'pages/demo.html?id=GP-56' },
-          ]
-        },
-      ]
-    };
-    // ====================================================
+    /* ============ 数据：严格来自《画板制作清单》10个模块 ============ */
+    var modules = [
+      { name: "模块一 实数集与函数", color: "#EF4444", children: [
+        { name: "GP-01 区间与邻域", level: "A" },
+        { name: "GP-02 确界原理", level: "A" },
+        { name: "GP-03 函数图像变换", level: "B" },
+        { name: "GP-04 复合函数与反函数", level: "B" }
+      ]},
+      { name: "模块二 极限的语言(ε-N/ε-δ)", color: "#F59E0B", children: [
+        { name: "GP-05 ε-N定义演示", level: "A" },
+        { name: "GP-06 迫敛性(夹逼定理)", level: "A" },
+        { name: "GP-07 单调有界与数e", level: "A" },
+        { name: "GP-08 递推数列蛛网图", level: "B" },
+        { name: "GP-09 柯西收敛准则", level: "B" },
+        { name: "GP-10 ε-δ定义演示", level: "A" },
+        { name: "GP-11 单侧极限与反例", level: "A" }
+      ]},
+      { name: "模块三 两个重要极限与无穷小", color: "#FBBF24", children: [
+        { name: "GP-12 sinx/x→1", level: "A" },
+        { name: "GP-13 (1+1/x)^x→e", level: "A" },
+        { name: "GP-14 无穷小量与阶", level: "B" },
+        { name: "GP-15 曲线的渐近线", level: "B" }
+      ]},
+      { name: "模块四 函数的连续性", color: "#10B981", children: [
+        { name: "GP-16 连续与增量比", level: "B" },
+        { name: "GP-17 间断点分类", level: "A" },
+        { name: "GP-18 闭区间连续函数性质", level: "A" },
+        { name: "GP-19 一致连续", level: "B" }
+      ]},
+      { name: "模块五 导数和微分", color: "#06B6D4", children: [
+        { name: "GP-20 割线趋近切线", level: "A" },
+        { name: "GP-21 瞬时速度", level: "B" },
+        { name: "GP-22 左右导数与不可导", level: "A" },
+        { name: "GP-23 参变量与极坐标切线", level: "C" },
+        { name: "GP-24 高阶导数", level: "B" },
+        { name: "GP-25 微分几何意义", level: "B" }
+      ]},
+      { name: "模块六 微分中值定理及应用", color: "#3B82F6", children: [
+        { name: "GP-26 罗尔与拉格朗日", level: "A" },
+        { name: "GP-27 柯西中值定理", level: "B" },
+        { name: "GP-28 洛必达法则", level: "A" },
+        { name: "GP-29 泰勒公式逼近", level: "A" },
+        { name: "GP-30 极值判别", level: "B" },
+        { name: "GP-31 最值应用", level: "B" },
+        { name: "GP-32 凸性与拐点", level: "A" },
+        { name: "GP-33 函数图像讨论", level: "A" },
+        { name: "GP-34 牛顿切线法", level: "A" }
+      ]},
+      { name: "模块七 实数的完备性", color: "#6366F1", children: [
+        { name: "GP-35 区间套定理", level: "C" },
+        { name: "GP-36 聚点与致密性", level: "B" },
+        { name: "GP-37 有限覆盖定理", level: "C" },
+        { name: "GP-38 上极限与下极限", level: "B" }
+      ]},
+      { name: "模块八 不定积分与定积分", color: "#8B5CF6", children: [
+        { name: "GP-39 原函数与积分曲线族", level: "A" },
+        { name: "GP-40 换元积分法", level: "B" },
+        { name: "GP-41 分部积分与Wallis", level: "C" },
+        { name: "GP-42 黎曼和与面积", level: "A" },
+        { name: "GP-43 达布和与可积准则", level: "B" },
+        { name: "GP-44 N-L公式与变上限积分", level: "A" },
+        { name: "GP-45 积分中值定理", level: "B" },
+        { name: "GP-46 定积分换元与分部", level: "C" }
+      ]},
+      { name: "模块九 定积分的应用", color: "#EC4899", children: [
+        { name: "GP-47 平面图形面积", level: "A" },
+        { name: "GP-48 平行截面求体积", level: "A" },
+        { name: "GP-49 平面曲线弧长", level: "B" },
+        { name: "GP-50 曲率与曲率圆", level: "B" },
+        { name: "GP-51 旋转曲面面积", level: "B" },
+        { name: "GP-52 物理应用", level: "C" }
+      ]},
+      { name: "模块十 反常积分", color: "#E11D48", children: [
+        { name: "GP-53 无穷积分收敛性", level: "A" },
+        { name: "GP-54 瑕积分直观", level: "B" },
+        { name: "GP-55 比较判别法", level: "B" },
+        { name: "GP-56 狄利克雷与阿贝尔", level: "C" }
+      ]}
+    ];
 
-    // 扁平化数据
+    /* ============ 用 view 坐标系预设坐标（替代力导向，模块天然固定）============ */
     var nodes = [], links = [];
-    function traverse(node, parent) {
-      var cat = 2; // 默认画板
-      if (!parent) cat = 0; // 中心
-      else if (node.children) cat = 1; // 模块
+    var M = modules.length;
+    var cx = 0, cy = 0;
+
+    // 中心节点
+    nodes.push({
+      id: "数学分析", name: "数学分析\n(第六版·上册)",
+      category: 0, symbolSize: 62, x: cx, y: cy,
+      itemStyle: { color: "#1A73E8", shadowBlur: 26, shadowColor: "#1A73E8" },
+      label: { fontSize: 15, fontWeight: "bold", color: "#fff" }
+    });
+
+    // 模块：按角度均匀放射，坐标固定
+    modules.forEach(function (mod, i) {
+      var angle = (Math.PI * 2 * i) / M - Math.PI / 2;
+      var r = 150;
+      var mx = cx + Math.cos(angle) * r;
+      var my = cy + Math.sin(angle) * r;
+
       nodes.push({
-        id: node.id || node.name,
-        name: node.name,
-        category: cat,
-        link: node.link || null,
-        isLeaf: !!node.isLeaf
+        id: mod.name, name: mod.name, category: 1, symbolSize: 34,
+        x: mx, y: my,
+        itemStyle: { color: mod.color, shadowBlur: 12, shadowColor: mod.color },
+        label: { fontSize: 11.5, color: "#fff", fontWeight: "bold" },
+        isModule: true, modColor: mod.color
       });
-      if (parent) links.push({ source: parent, target: node.id || node.name });
-      if (node.children) node.children.forEach(c => traverse(c, node.id || node.name));
-    }
-    traverse(rawData, null);
+      links.push({ source: "数学分析", target: mod.name,
+        lineStyle: { color: mod.color, opacity: 0.55, width: 2 } });
 
-    var option = {
-      tooltip: {
-        trigger: 'item',
-        formatter: function(params) {
-          if (params.data.link) return params.data.name + '<br>👉 点击跳转画板';
-          return params.data.name + '<br>📂 点击展开/收起';
-        }
-      },
-      legend: { data: ['中心','模块','画板'], top: 10, textStyle: { fontSize: 13 } },
-      series: [{
-        type: 'graph',
-        layout: 'force',
-        data: nodes,
-        links: links,
-        categories: [
-          {name:'中心', itemStyle:{color:'#C0392B'}},
-          {name:'模块', itemStyle:{color:'#2E86C1'}},
-          {name:'画板', itemStyle:{color:'#27AE60'}}
-        ],
-        roam: true,
-        draggable: true,
-        force: {
-          repulsion: 500,
-          edgeLength: [60, 140],
-          gravity: 0.12,
-          layoutAnimation: true
-        },
-        label: {
-          show: true,
-          position: 'right',
-          fontSize: 11,
-          color: '#333',
-          formatter: '{b}'
-        },
-        lineStyle: { color: '#aaa', curveness: 0.08, width: 1.2 },
-        emphasis: {
-          focus: 'adjacency',
-          lineStyle: { width: 3, color: '#2E86C1' },
-          label: { show: true, fontSize: 14, fontWeight: 'bold' }
-        },
-        // 初始只展开中心+模块，收起画板节点
-        // 通过 setOption 后手动隐藏叶子节点来实现
-      }]
-    };
-
-    chart.setOption(option);
-
-    // 点击交互
-    chart.on('click', function(params) {
-      if (params.data.link) {
-        window.location.href = params.data.link;
-        return;
-      }
-      // 展开/收起子节点（切换显隐）
-      var targetName = params.data.id || params.data.name;
-      var childNames = [];
-      links.forEach(function(l) {
-        if (l.source === targetName) childNames.push(l.target);
-      });
-      if (childNames.length === 0) return;
-
-      // 检查第一个子节点是否当前可见
-      var firstChild = nodes.find(function(n) { return n.id === childNames[0] || n.name === childNames[0]; });
-      if (!firstChild) return;
-      var currentlyVisible = chart.getOption().series[0].data.some(function(d) { return (d.id === firstChild.id || d.name === firstChild.name); });
-
-      // 重新构建数据
-      var newNodes = nodes.filter(function(n) {
-        if (childNames.indexOf(n.id || n.name) !== -1) return false; // 移除子节点
-        return true;
-      });
-
-      if (currentlyVisible) {
-        // 收起：移除子节点
-        var opt = chart.getOption();
-        opt.series[0].data = newNodes;
-        chart.setOption(opt, true);
-      } else {
-        // 展开：添加子节点回来
-        var restored = nodes.filter(function(n) {
-          return childNames.indexOf(n.id || n.name) !== -1;
+      // 细分画板：沿模块方向扇形散开
+      var k = mod.children.length;
+      mod.children.forEach(function (kp, j) {
+        var spread = k > 1 ? (j - (k - 1) / 2) * 0.13 : 0;
+        var a2 = angle + spread;
+        var rr = r + 70 + (j % 3) * 18;
+        nodes.push({
+          id: kp.name, name: kp.name, category: 2, symbolSize: 15,
+          x: cx + Math.cos(a2) * rr, y: cy + Math.sin(a2) * rr,
+          itemStyle: { color: mod.color, opacity: 0.85 },
+          label: { fontSize: 9.5, color: "#d7dde5" },
+          modName: mod.name, link: "pages/demo.html?id=" + encodeURIComponent(kp.name),
+          level: kp.level, modColor: mod.color
         });
-        var opt = chart.getOption();
-        opt.series[0].data = opt.series[0].data.concat(restored);
-        chart.setOption(opt, true);
+        links.push({ source: mod.name, target: kp.name,
+          lineStyle: { color: mod.color, opacity: 0.32, width: 1 } });
+      });
+    });
+
+    /* ============ 视图状态：记录当前焦点，避免重建数据 ============ */
+    var focused = null; // 当前聚焦的模块名，null 表示全览
+
+    function buildSeries() {
+      // 根据 focused 状态计算节点/连线的显示样式
+      var data = nodes.map(function (n) {
+        var nd = {
+          id: n.id, name: n.name, category: n.category,
+          x: n.x, y: n.y,
+          itemStyle: Object.assign({}, n.itemStyle),
+          label: Object.assign({}, n.label),
+          symbolSize: n.symbolSize
+        };
+        if (n.isModule) {
+          if (focused === n.id) { // 当前模块：放大高亮
+            nd.symbolSize = 46;
+            nd.itemStyle = { color: n.modColor, shadowBlur: 26, shadowColor: n.modColor };
+            nd.label = { fontSize: 14, color: "#fff", fontWeight: "bold" };
+          }
+        } else if (n.link) { // 画板节点
+          if (focused && n.modName === focused) { // 聚焦模块的画板：放大
+            nd.symbolSize = 24;
+            nd.itemStyle = { color: n.modColor, opacity: 1, shadowBlur: 10, shadowColor: n.modColor };
+            nd.label = { fontSize: 11.5, color: "#fff" };
+          } else if (focused) { // 非聚焦模块的画板：变暗
+            nd.itemStyle = Object.assign({}, nd.itemStyle, { opacity: 0.2 });
+            nd.label = Object.assign({}, nd.label, { opacity: 0.25, color: "#666" });
+          }
+        }
+        if (n.isModule) nd.isModule = true;
+        if (n.link) { nd.link = n.link; nd.level = n.level; }
+        nd.modName = n.modName;
+        nd.modColor = n.modColor;
+        return nd;
+      });
+
+      var lks = links.map(function (l) {
+        var ld = { source: l.source, target: l.target,
+          lineStyle: Object.assign({}, l.lineStyle) };
+        if (focused) {
+          if (l.source === focused || l.target === focused) {
+            ld.lineStyle = { color: (typeof nodes.find(function(nn){return nn.id===l.source;}) !== 'undefined' ? nodes.find(function(nn){return nn.id===l.source;}).modColor : l.lineStyle.color), opacity: 0.85, width: 2.6 };
+          } else {
+            ld.lineStyle = Object.assign({}, ld.lineStyle, { opacity: 0.1 });
+          }
+        }
+        return ld;
+      });
+
+      return {
+        type: "graph",
+        coordinateSystem: "view", // 逻辑坐标系，节点坐标固定，不漂移
+        data: data,
+        links: lks,
+        categories: [{ name: "中心" }, { name: "模块" }, { name: "画板知识点" }],
+        roam: true,             // 滚轮缩放 + 拖拽平移
+        draggable: true,        // 允许拖动节点
+        layout: "none",         // 关闭自动布局，使用预设坐标
+        zoom: 1,
+        center: [0, 0],
+        label: { show: true, position: "right", formatter: "{b}", padding: [2, 4] },
+        lineStyle: { curveness: 0.06 },
+        emphasis: { focus: "adjacency", scale: 1.15,
+          label: { show: true }, itemStyle: { shadowBlur: 18 } }
+      };
+    }
+
+    function getOption() {
+      return {
+        backgroundColor: "#0f1117",
+        tooltip: {
+          trigger: "item",
+          backgroundColor: "rgba(22,26,34,.97)",
+          borderColor: "#3b82f6", borderWidth: 1,
+          textStyle: { color: "#e6edf3", fontSize: 12.5 },
+          formatter: function (p) {
+            var d = p.data;
+            if (d.link) {
+              return '<b style="color:#fff">' + d.name + '</b>'
+                   + '<br><span style="color:#8ab4f8">优先级：' + d.level + '</span>'
+                   + '<br><span style="color:#34d399">➤ 点击跳转交互式画板</span>';
+            }
+            if (d.isModule) {
+              var cnt = nodes.filter(function (n) { return n.modName === d.id; }).length;
+              return '<b style="color:#fff">' + d.name + '</b>'
+                   + '<br><span style="color:#8ab4f8">含 ' + cnt + ' 个画板知识点</span>'
+                   + '<br><span style="color:#fbbf24">🖱 点击聚焦放大</span>';
+            }
+            return '<b style="color:#fff">' + d.name + '</b>';
+          }
+        },
+        series: [buildSeries()]
+      };
+    }
+
+    chart.setOption(getOption());
+
+    /* ============ 点击交互：聚焦 / 还原（merge 模式，保留 roam 状态）============ */
+    chart.on("click", function (params) {
+      var d = params.data;
+      if (d.link) { window.location.href = d.link; return; }
+
+      if (d.isModule) {
+        focused = (focused === d.id) ? null : d.id;
+        chart.setOption({ series: [buildSeries()] }, true); // true = merge，保留缩放
       }
     });
 
-    // 初始只显示中心和模块（收起所有画板）
-    (function initCollapse() {
-      var opt = chart.getOption();
-      var moduleNames = rawData.children.map(function(m) { return m.name; });
-      var filteredNodes = opt.series[0].data.filter(function(n) {
-        // 保留中心和模块，隐藏画板
-        if (n.category === 2) return false;
-        return true;
+    // 双击空白处：缩放归位
+    chart.getZr().on("dblclick", function (e) {
+      if (!e.target) {
+        focused = null;
+        chart.setOption({ series: [buildSeries()] }, true);
+      }
+    });
+
+    /* ============ 图例 ============ */
+    (function buildLegend() {
+      var html = '<div style="display:flex;align-items:center;margin-bottom:6px;">'
+                + '<span class="center-dot"></span>中心节点</div>';
+      modules.forEach(function (m) {
+        var short = m.name.replace(" 极限的语言(ε-N/ε-δ)", "").replace(" 定积分", "");
+        html += '<div class="item"><span class="dot" style="background:' + m.color + '"></span>' + short + '</div>';
       });
-      opt.series[0].data = filteredNodes;
-      chart.setOption(opt, true);
+      document.getElementById("legend").innerHTML = html;
     })();
 
-    window.addEventListener('resize', function() { chart.resize(); });
+    window.addEventListener("resize", function () { chart.resize(); });
   </script>
 </body>
 </html>
