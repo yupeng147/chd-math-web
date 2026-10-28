@@ -6,42 +6,51 @@
 <title>可视化图谱</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
-  body { margin: 0; padding: 0; background: #0b0e14; color: #e6edf3; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; overflow: hidden; }
-  #chart { width: 100vw; height: 100vh; }
-  .title-bar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: 900; color: #00f0ff; z-index: 10; text-shadow: 0 0 12px rgba(0,240,255,0.4); pointer-events: none; letter-spacing: 2px; }
-  .legend { position: absolute; bottom: 15px; left: 15px; background: rgba(20,24,32,.85); padding: 10px 14px; border-radius: 8px; font-size: 12px; border: 1px solid #2a2f3a; z-index: 10; max-width: 220px; }
-  .legend .item { display: flex; align-items: center; margin: 4px 0; color: #a0aec0; font-weight: 700; }
-  .legend .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
-  .legend .center-dot { width: 12px; height: 12px; border-radius: 50%; background: #00f0ff; margin-right: 8px; box-shadow: 0 0 8px #00f0ff; }
-  .tip { position: absolute; bottom: 15px; right: 15px; font-size: 12px; color: #8ab4f8; background: rgba(20,24,32,.85); padding: 8px 12px; border-radius: 8px; border: 1px solid #2a2f3a; z-index: 10; font-weight: 600; }
-  .btn-reset { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); z-index: 10; background: rgba(0,240,255,.15); border: 1px solid #00f0ff; color: #00f0ff; padding: 5px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: none; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #0b0e14; color: #e6edf3; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; overflow: auto; }
+  #chart { width: 100vw; height: 100vh; min-width: 1200px; min-height: 900px; }
+  .title-bar { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: 900; color: #00f0ff; z-index: 10; text-shadow: 0 0 12px rgba(0,240,255,0.4); pointer-events: none; letter-spacing: 3px; }
+  .guide { position: fixed; top: 14px; left: 14px; z-index: 10; background: rgba(15,20,28,.92); border: 1px solid #2a3a4a; border-left: 4px solid #00f0ff; border-radius: 8px; padding: 12px 16px; font-size: 12.5px; color: #cbd5e1; max-width: 250px; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+  .guide h4 { margin: 0 0 8px 0; font-size: 13px; color: #00f0ff; font-weight: 800; letter-spacing: 1px; }
+  .guide .row { display: flex; align-items: center; margin: 5px 0; line-height: 1.4; }
+  .guide .key { display: inline-block; background: rgba(0,240,255,.12); border: 1px solid rgba(0,240,255,.4); color: #00f0ff; border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
+  .legend { position: fixed; bottom: 15px; left: 14px; z-index: 10; background: rgba(15,20,28,.92); padding: 10px 14px; border-radius: 8px; font-size: 12px; border: 1px solid #2a3a4a; max-width: 230px; }
+  .legend .item { display: flex; align-items: center; margin: 4px 0; color: #cbd5e1; font-weight: 700; }
+  .legend .dot { width: 11px; height: 11px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+  .legend .center-dot { width: 14px; height: 14px; border-radius: 50%; background: #00f0ff; margin-right: 8px; box-shadow: 0 0 10px #00f0ff; }
+  .btn-reset { position: fixed; top: 52px; left: 50%; transform: translateX(-50%); z-index: 10; background: rgba(0,240,255,.15); border: 1px solid #00f0ff; color: #00f0ff; padding: 6px 20px; border-radius: 20px; font-size: 13px; font-weight: 800; cursor: pointer; display: none; }
   .btn-reset.show { display: block; }
-  .btn-reset:hover { background: rgba(0,240,255,.3); }
+  .btn-reset:hover { background: rgba(0,240,255,.35); }
 </style>
 </head>
 <body>
 <div class="title-bar">可视化图谱</div>
+<div class="guide">
+  <h4>📖 操作方法</h4>
+  <div class="row"><span class="key">单击</span><span class="txt">模块节点聚焦放大该模块</span></div>
+  <div class="row"><span class="key">双击</span><span class="txt">空白处返回全览</span></div>
+  <div class="row"><span class="key">滚轮</span><span class="txt">放大 / 缩小图谱</span></div>
+  <div class="row"><span class="key">拖拽</span><span class="txt">平移查看不同区域</span></div>
+  <div class="row"><span class="key">点击</span><span class="txt">GP 节点跳转画板</span></div>
+</div>
 <button class="btn-reset" id="btnReset" onclick="resetView()">返回全览</button>
 <div id="chart"></div>
 <div class="legend" id="legend"></div>
-<div class="tip">🖱 单击模块聚焦放大<br>🖱 滚轮缩放 · 拖拽平移</div>
 
 <script>
 var chart = echarts.init(document.getElementById('chart'));
 var focused = null;
 
-// 完整 10 章模块与 56 个画板数据
 var modules = [
-  { id: "M1", short: "模块一 实数集与函数", color: "#3b82f6", ang: 0 },
-  { id: "M2", short: "模块二 极限的语言", color: "#10b981", ang: 36 },
-  { id: "M3", short: "模块三 两个重要极限与无穷小", color: "#f59e0b", ang: 72 },
-  { id: "M4", short: "模块四 函数的连续性", color: "#ef4444", ang: 108 },
-  { id: "M5", short: "模块五 导数和微分", color: "#8b5cf6", ang: 144 },
-  { id: "M6", short: "模块六 微分中值定理及其应用", color: "#ec4899", ang: 180 },
-  { id: "M7", short: "模块七 实数的完备性", color: "#06b6d4", ang: 216 },
-  { id: "M8", short: "模块八 不定积分与定积分", color: "#f97316", ang: 252 },
-  { id: "M9", short: "模块九 定积分的应用", color: "#84cc16", ang: 288 },
-  { id: "M10", short: "模块十 反常积分", color: "#6366f1", ang: 324 }
+  { id: "M1",  short: "实数集与函数",           color: "#3b82f6" },
+  { id: "M2",  short: "极限的语言",             color: "#10b981" },
+  { id: "M3",  short: "两个重要极限与无穷小",     color: "#f59e0b" },
+  { id: "M4",  short: "函数的连续性",           color: "#ef4444" },
+  { id: "M5",  short: "导数和微分",             color: "#8b5cf6" },
+  { id: "M6",  short: "微分中值定理及其应用",     color: "#ec4899" },
+  { id: "M7",  short: "实数的完备性",           color: "#06b6d4" },
+  { id: "M8",  short: "不定积分与定积分",        color: "#f97316" },
+  { id: "M9",  short: "定积分的应用",           color: "#84cc16" },
+  { id: "M10", short: "反常积分",              color: "#6366f1" }
 ];
 
 var gps = [
@@ -104,44 +113,90 @@ var gps = [
 ];
 
 var nodes = [], links = [];
-var R_MOD = 150, R_GP_BASE = 240;
+var R_MOD = 260, R_GP = 470, ANG_STEP = 36;
 
-// 中心节点
-nodes.push({ id: "center", name: "数学分析(上册)", fullName: "数学分析（第六版·上册）", isCenter: true, symbolSize: 60, itemStyle: { color: "#00f0ff" }, label: { show: true, fontSize: 15, fontWeight: "bold", color: "#fff", fontStyle: "normal" }, x: 0, y: 0, fixed: true });
+// 中心
+nodes.push({
+  id: "center", name: "可视化图谱", fullName: "数学分析（第六版·上册）可视化图谱", isCenter: true,
+  symbolSize: 78, itemStyle: { color: "#00f0ff", shadowBlur: 35, shadowColor: "#00f0ff" },
+  label: { show: true, fontSize: 18, fontWeight: "bold", color: "#fff" },
+  x: 0, y: 0, fixed: true
+});
 
-// 模块与画板
-modules.forEach(function(m) {
-  var rad = m.ang * Math.PI / 180;
-  nodes.push({ id: m.id, name: m.short, fullName: m.short, isModule: true, modColor: m.color, symbolSize: 42, itemStyle: { color: m.color }, label: { show: true, fontSize: 13, fontWeight: "bold", color: "#fff" }, x: R_MOD * Math.cos(rad), y: R_MOD * Math.sin(rad), fixed: true });
-  links.push({ source: "center", target: m.id });
-
-  var mg = gps.filter(function(g) { return g.mod === m.id; });
-  var span = mg.length >= 9 ? 0.48 : mg.length >= 7 ? 0.40 : 0.34;
-  var startAng = rad - span / 2;
-  mg.forEach(function(g, i) {
-    var idx = mg.length === 1 ? 0.5 : (i / (mg.length - 1));
-    var a = startAng + idx * span;
-    var r = R_GP_BASE + (m.ang >= 90 && m.ang <= 270 ? 25 : 0);
-    nodes.push({ id: g.gp, name: g.gp, fullName: g.full, gp: g.gp, mod: m.id, lvl: g.lvl, isGP: true, modColor: m.color, symbolSize: 14, itemStyle: { color: m.color, opacity: 0 }, label: { show: false, fontSize: 11, fontWeight: "bold", color: "#e6edf3" }, link: "pages/demo.html?id=" + g.gp, x: r * Math.cos(a), y: r * Math.sin(a), fixed: false });
-    links.push({ source: m.id, target: g.gp });
+modules.forEach(function(m, i) {
+  var rad = (i * ANG_STEP - 90) * Math.PI / 180;
+  m.rad = rad;
+  var x = R_MOD * Math.cos(rad), y = R_MOD * Math.sin(rad);
+  nodes.push({
+    id: m.id, name: "模块" + (i + 1) + "\n" + m.short, fullName: "模块" + (i + 1) + " " + m.short, isModule: true, modColor: m.color,
+    symbolSize: 60, itemStyle: { color: m.color, shadowBlur: 20, shadowColor: m.color },
+    label: { show: true, fontSize: 14, fontWeight: "bold", color: "#fff", lineHeight: 16 },
+    x: x, y: y, fixed: true, ang: rad
   });
+  links.push({ source: "center", target: m.id });
+});
+
+// 密集模块：中远周近弧线 | 普通模块：单向均匀展开
+var arcModules = { "M6": { span: 58, dist: 150 }, "M8": { span: 42, dist: 130 } };
+var flatSpan = { "M1": 26, "M2": 30, "M3": 24, "M4": 24, "M5": 30, "M7": 24, "M9": 30, "M10": 24 };
+
+gps.forEach(function(g) {
+  var mi = modules.findIndex(function(m) { return m.id === g.mod; });
+  var m = modules[mi];
+  var mg = gps.filter(function(gg) { return gg.mod === g.mod; });
+  var idx = mg.indexOf(g);
+  var total = mg.length;
+  var arc = arcModules[g.mod];
+
+  var a, r;
+  if (arc) {
+    var span = arc.span * Math.PI / 180;
+    var offset = total === 1 ? 0 : (idx - (total - 1) / 2) * (span / (total - 1));
+    a = m.rad + offset;
+    var t = total > 1 ? Math.abs(idx - (total - 1) / 2) / ((total - 1) / 2) : 0;
+    var rExtra = -arc.dist * (1 - Math.pow(1 - t, 2));
+    r = R_GP + rExtra;
+  } else {
+    var s = (flatSpan[g.mod] != null ? flatSpan[g.mod] : 26) * Math.PI / 180;
+    var off = total === 1 ? 0 : (idx - (total - 1) / 2) * (s / (total - 1));
+    a = m.rad + off;
+    r = R_GP;
+  }
+  var x = r * Math.cos(a), y = r * Math.sin(a);
+  nodes.push({
+    id: g.gp, name: g.gp, fullName: g.full, gp: g.gp, mod: g.mod, lvl: g.lvl, isGP: true, modColor: m.color,
+    symbolSize: 22, itemStyle: { color: m.color, opacity: 0, shadowBlur: 10, shadowColor: m.color },
+    label: { show: false, fontSize: 12, fontWeight: "bold", color: "#e6edf3" },
+    link: "pages/demo.html?id=" + g.gp,
+    x: x, y: y, fixed: true, ang: a
+  });
+  links.push({ source: g.mod, target: g.gp });
 });
 
 function buildSeries() {
   var data = nodes.map(function(nd) {
     var n = Object.assign({}, nd);
+    n.fixed = true;
     if (n.isGP) {
       var show = focused === n.mod;
       n.label.show = show;
-      n.label.formatter = show ? "{b}  " + n.fullName.substring(0, 14) + (n.fullName.length > 14 ? "..." : "") : "{b}";
+      n.label.formatter = "{b}  " + n.fullName;
       n.itemStyle.opacity = show ? 1 : 0;
-      n.symbolSize = show ? 18 : 6;
-      if (show) n.fixed = true; else n.fixed = false;
+      n.symbolSize = show ? 26 : 8;
+      var ang = n.ang;
+      n.label.position = (ang > -Math.PI / 2 && ang < Math.PI / 2) ? "right" : "left";
+      n.label.backgroundColor = "rgba(11,14,20,.92)";
+      n.label.padding = [5, 9];
+      n.label.borderRadius = 6;
+      n.label.borderColor = n.modColor;
+      n.label.borderWidth = 1;
+      n.label.distance = 12;
     }
     if (n.isModule) {
       var active = !focused || focused === n.id;
-      n.itemStyle.opacity = active ? 1 : 0.3;
-      n.label.opacity = active ? 1 : 0.35;
+      n.itemStyle.opacity = active ? 1 : 0.25;
+      n.label.opacity = active ? 1 : 0.3;
+      if (focused === n.id) { n.symbolSize = 72; n.itemStyle.shadowBlur = 35; }
     }
     return n;
   });
@@ -150,19 +205,24 @@ function buildSeries() {
     var show = false;
     if (l.source === "center") show = !focused || focused === l.target;
     else show = focused === l.source;
-    ld.lineStyle = { opacity: show ? (l.source === "center" ? 0.4 : 0.8) : 0.03, curveness: 0.02 };
+    ld.lineStyle = { opacity: show ? (l.source === "center" ? 0.45 : 0.85) : 0.02, curveness: 0.02, width: show ? 1.5 : 0.5 };
     return ld;
   });
-  return { type: "graph", layout: "none", data: data, links: lks, roam: true, draggable: true, zoom: 1, center: [0, 0], emphasis: { focus: "adjacency", scale: 1.2, itemStyle: { shadowBlur: 15, shadowColor: "#00f0ff" } } };
+  return {
+    type: "graph", layout: "none", data: data, links: lks,
+    roam: "move", zoom: 1, center: [0, 0],
+    emphasis: { focus: "adjacency", scale: 1.12, itemStyle: { shadowBlur: 20, shadowColor: "#00f0ff" } }
+  };
 }
 
 chart.setOption({
   backgroundColor: "#0b0e14",
-  tooltip: { trigger: "item", backgroundColor: "rgba(20,24,32,.97)", borderColor: "#3b82f6", textStyle: { color: "#e6edf3", fontSize: 12.5 },
+  tooltip: {
+    trigger: "item", backgroundColor: "rgba(20,24,32,.97)", borderColor: "#3b82f6", textStyle: { color: "#e6edf3", fontSize: 12.5 },
     formatter: function(p) {
       var d = p.data;
       if (d.isCenter) return '<b style="color:#00f0ff">' + d.fullName + '</b><br>共 10 个模块 · 56 个交互式画板<br><span style="color:#8ab4f8">🖱 单击模块聚焦放大</span>';
-      if (d.isModule) return '<b style="color:' + d.modColor + '">' + d.fullName + '</b><br>含 ' + gps.filter(function(g){return g.mod===d.id;}).length + ' 个画板<br><span style="color:#fbbf24">🖱 单击聚焦放大</span>';
+      if (d.isModule) return '<b style="color:' + d.modColor + '">' + d.fullName + '</b><br>含 ' + gps.filter(function(g) { return g.mod === d.id; }).length + ' 个画板<br><span style="color:#fbbf24">🖱 单击聚焦放大</span>';
       if (d.isGP) return '<b style="color:' + d.modColor + '">' + d.gp + '</b>　' + d.fullName + '<br><span style="color:#8ab4f8">优先级：' + d.lvl + '</span><br><span style="color:#34d399">➤ 点击跳转交互式画板</span>';
       return d.name;
     }
@@ -170,47 +230,44 @@ chart.setOption({
   series: [buildSeries()]
 });
 
-// 点击模块：局部放大（平滑缩放平移到该模块区域）
+// ===== 聚焦：以点击的模块为中心 =====
+function focusModule(modId) {
+  focused = modId;
+  var mod = nodes.find(function(n) { return n.id === modId && n.isModule; });
+  if (!mod) return;
+  var ang = Math.atan2(mod.y, mod.x);
+  var r = -100; // 视口向模块"内侧"回退，让模块居中
+  var cx = mod.x - r * Math.cos(ang);   // 减号：方向相反
+  var cy = mod.y - r * Math.sin(ang);
+  chart.setOption({ series: [Object.assign({}, buildSeries(), { center: [cx, cy], zoom: 2.6 })] }, true);
+  document.getElementById('btnReset').classList.add('show');
+}
+
 chart.on("click", function(params) {
   var d = params.data;
   if (d.link) { window.location.href = d.link; return; }
   if (d.isModule) {
-    if (focused === d.id) {
-      resetView();
-    } else {
-      focused = d.id;
-      // 局部放大：将视口中心移到该模块位置，放大 2.2 倍
-      var targetX = d.x * 2.2, targetY = d.y * 2.2;
-      chart.setOption({
-        series: [Object.assign({}, buildSeries(), {
-          center: [targetX, targetY],
-          zoom: 2.2
-        })]
-      }, true);
-      document.getElementById('btnReset').classList.add('show');
-    }
+    if (focused === d.id) { resetView(); }
+    else { focusModule(d.id); }
   }
 });
 
-// 双击空白：返回全览
 chart.getZr().on("dblclick", function(e) { if (!e.target) resetView(); });
 
 function resetView() {
   focused = null;
-  chart.setOption({
-    series: [Object.assign({}, buildSeries(), { center: [0, 0], zoom: 1 })]
-  }, true);
+  chart.setOption({ series: [Object.assign({}, buildSeries(), { center: [0, 0], zoom: 1 })] }, true);
   document.getElementById('btnReset').classList.remove('show');
 }
 
 // 图例
 (function() {
-  var html = '<div class="item"><span class="center-dot"></span>中心节点（上册全貌）</div>';
-  modules.forEach(function(m) { html += '<div class="item"><span class="dot" style="background:' + m.color + '"></span>' + m.short + '</div>'; });
+  var html = '<div class="item"><span class="center-dot"></span>可视化图谱（上册全貌）</div>';
+  modules.forEach(function(m, i) { html += '<div class="item"><span class="dot" style="background:' + m.color + '"></span>模块' + (i + 1) + '　' + m.short + '</div>'; });
   document.getElementById("legend").innerHTML = html;
 })();
 
-window.addEventListener("resize", function(){ chart.resize(); });
+window.addEventListener("resize", function() { chart.resize(); });
 </script>
 </body>
 </html>
