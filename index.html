@@ -117,7 +117,7 @@ var R_MOD = 260, R_GP = 470, ANG_STEP = 36;
 
 // 中心
 nodes.push({
-  id: "center", name: "可视化图谱", fullName: "数学分析（第六版·上册）可视化图谱", isCenter: true,
+  id: "center", name: "数学分析（上册）", fullName: "数学分析（第六版·上册）", isCenter: true,
   symbolSize: 78, itemStyle: { color: "#00f0ff", shadowBlur: 35, shadowColor: "#00f0ff" },
   label: { show: true, fontSize: 18, fontWeight: "bold", color: "#fff" },
   x: 0, y: 0, fixed: true
@@ -262,7 +262,7 @@ function resetView() {
 
 // 图例
 (function() {
-  var html = '<div class="item"><span class="center-dot"></span>可视化图谱（上册全貌）</div>';
+  var html = '<div class="item"><span class="center-dot"></span>数学分析（上册）</div>';
   modules.forEach(function(m, i) { html += '<div class="item"><span class="dot" style="background:' + m.color + '"></span>模块' + (i + 1) + '　' + m.short + '</div>'; });
   document.getElementById("legend").innerHTML = html;
 })();
