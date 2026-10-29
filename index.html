@@ -222,8 +222,8 @@ chart.setOption({
     formatter: function(p) {
       var d = p.data;
       if (d.isCenter) return '<b style="color:#00f0ff">' + d.fullName + '</b><br>共 10 个模块 · 56 个交互式动态可视化交互模型<br><span style="color:#8ab4f8">🖱 单击模块聚焦放大</span>';
-      if (d.isModule) return '<b style="color:' + d.modColor + '">' + d.fullName + '</b><br>含 ' + gps.filter(function(g) { return g.mod === d.id; }).length + ' 个画板<br><span style="color:#fbbf24">🖱 单击聚焦放大</span>';
-      if (d.isGP) return '<b style="color:' + d.modColor + '">' + d.gp + '</b>　' + d.fullName + '<br><span style="color:#8ab4f8">优先级：' + d.lvl + '</span><br><span style="color:#34d399">➤ 点击跳转交互式画板</span>';
+      if (d.isModule) return '<b style="color:' + d.modColor + '">' + d.fullName + '</b><br>含 ' + gps.filter(function(g) { return g.mod === d.id; }).length + ' 个动态可视化交互模型<br><span style="color:#fbbf24">🖱 单击聚焦放大</span>';
+      if (d.isGP) return '<b style="color:' + d.modColor + '">' + d.gp + '</b>　' + d.fullName + '<br><span style="color:#8ab4f8">优先级：' + d.lvl + '</span><br><span style="color:#34d399">➤ 点击跳转动态可视化交互模型</span>';
       return d.name;
     }
   },
