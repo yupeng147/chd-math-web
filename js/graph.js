@@ -58,10 +58,10 @@ document.getElementById('graph').addEventListener('wheel', function(e) {
   e.preventDefault(); 
 }, { passive: false });
 
-// 点击交互：末级跳转画板，非末级（章节/节）可扩展展开/收起
+// 点击交互：末级跳转动态可视化交互模型，非末级（章节/节）可扩展展开/收起
 chart.on('click', function(params) {
   if (params.data.link) {
-    window.location.href = params.data.link; // 跳转 GeoGebra 画板
+    window.location.href = params.data.link; // 跳转 GeoGebra 动态可视化交互模型
   } else {
     // 简易展开/收起（后续可优化为动态过滤 nodes/links）
     // 目前力导向图点击节点会有高亮，满足基础交互

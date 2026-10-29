@@ -30,7 +30,7 @@
   <div class="row"><span class="key">双击</span><span class="txt">空白处返回全览</span></div>
   <div class="row"><span class="key">滚轮</span><span class="txt">放大 / 缩小图谱</span></div>
   <div class="row"><span class="key">拖拽</span><span class="txt">平移查看不同区域</span></div>
-  <div class="row"><span class="key">点击</span><span class="txt">GP 节点跳转画板</span></div>
+  <div class="row"><span class="key">点击</span><span class="txt">GP 节点跳转动态可视化交互模型</span></div>
 </div>
 <button class="btn-reset" id="btnReset" onclick="resetView()">返回全览</button>
 <div id="chart"></div>
@@ -221,7 +221,7 @@ chart.setOption({
     trigger: "item", backgroundColor: "rgba(20,24,32,.97)", borderColor: "#3b82f6", textStyle: { color: "#e6edf3", fontSize: 12.5 },
     formatter: function(p) {
       var d = p.data;
-      if (d.isCenter) return '<b style="color:#00f0ff">' + d.fullName + '</b><br>共 10 个模块 · 56 个交互式画板<br><span style="color:#8ab4f8">🖱 单击模块聚焦放大</span>';
+      if (d.isCenter) return '<b style="color:#00f0ff">' + d.fullName + '</b><br>共 10 个模块 · 56 个交互式动态可视化交互模型<br><span style="color:#8ab4f8">🖱 单击模块聚焦放大</span>';
       if (d.isModule) return '<b style="color:' + d.modColor + '">' + d.fullName + '</b><br>含 ' + gps.filter(function(g) { return g.mod === d.id; }).length + ' 个画板<br><span style="color:#fbbf24">🖱 单击聚焦放大</span>';
       if (d.isGP) return '<b style="color:' + d.modColor + '">' + d.gp + '</b>　' + d.fullName + '<br><span style="color:#8ab4f8">优先级：' + d.lvl + '</span><br><span style="color:#34d399">➤ 点击跳转交互式画板</span>';
       return d.name;
